@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+</div>
+    {% for m in chat_thread %}
+        <div class="messages">
+            <h3><b>{{ m.role }}</b> said:</h3> <pre wrap="true"><p>{{ m.content }}</p></pre></div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+    <h1>Analyzer</h1>
+    {% if answer %}
+        <div class="answer">
+            <p><b>Answer:</b></p>
+            <pre wrap="true">{{ answer }}</pre>
+        </div>
+    {% endif %}
+    <hr>
+    <h2>Code</h2>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>{{ form.code(size=10000) }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+    <hr>
+    <h2>Chat Log</h2>
+    <div>
+        {% for m in chat_thread %}
+            <div class="messages">
+                <h3><b>{{ m.role }}</b> said:</h3> <pre wrap="true"><p>{{ m.content }}</p></pre></div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
