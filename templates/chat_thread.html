@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+
+<main class="container">
+  <br>
+  <div class="container" align="center">
+    <div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <p>
+          See your chat thread with ChatGPT history here.
+        </p>
+      </div>
+    </div>
+  </div>
+  <a href="/clear" class="btn btn-warning btn-lg" tabindex="-1" role="button" aria-disabled="true">Clear Log</a>
+  <a href="/export_message" class="btn btn-secondary btn-lg" tabindex="-1" role="button" aria-disabled="true">Export To File</a>
+  <hr>
+  
+  <div class="container">
+    <p class="h2">Chat Thread</p>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Role</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in chat_thread %}
+          <tr>
+            <td> {{ m.role }} </td>
+            <td><pre wrap="true"> {{ m.content }} </pre></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+      </tfoot>
+    </table>            
+  </div>
+</main>
+
+{% endblock %}

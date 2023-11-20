@@ -1,28 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
-<div>
-    <h1>Analyzer</h1>
-    {% if answer %}
-        <div class="answer">
-            <p><b>Answer:</b></p>
-            <pre wrap="true">{{ answer }}</pre>
-        </div>
-    {% endif %}
-    <hr>
-    <h2>Code</h2>
-    <form action="" method="post" novalidate>
-        {{ form.hidden_tag() }}
-        <p>{{ form.code(size=10000) }}</p>
-        <p>{{ form.submit() }}</p>
-    </form>
-    <hr>
-    <h2>Chat Log</h2>
-    <div>
-        {% for m in chat_thread %}
-            <div class="messages">
-                <h3><b>{{ m.role }}</b> said:</h3> <pre wrap="true"><p>{{ m.content }}</p></pre></div>
+
+<main class="container">   
+    <br> 
+    <div class="container" align="center">
+        <div class="p-5 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <p>
+                    Upload your source code down below and see if ChatGPT can find any security bugs. Your results can be found at the bottom of this page. 
+                    Please allow some time for your request to process. This project is still in development.
+                </p>
             </div>
-        {% endfor %}
+        </div>
     </div>
-</div>
+    <hr>
+    <div class="container" align="center">
+        <p class="h2">Code Analyzer</p>
+        <div class="form-outline">
+            <form action="/code" method="post" novalidate>
+                {{ form.hidden_tag() }}
+                {{ form.code(rows=25, cols=100) }} 
+                <br>
+                <button type="submit" class="btn btn-primary" action>Submit</button>
+                <button type="button" class="btn btn-warning">Reset</button>
+            </form>
+        </div>
+    </div>
+    <hr>
+    <div class="container">
+        <div class="p-5 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                {% if answer %}
+                <p class="h2">Results</p>
+                    {% if result_as_json %}
+                        <p>There are <b>{{ answer.findings|length }}</b> issues to report.</p>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Issue</th>
+                                <th>Severity</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Solution</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for finding in answer.findings %}
+                                <tr>
+                                    <td><a href="#">{{ finding.issue_id[0:8] }}</a></td>
+                                    <td> {{ finding.issue_severity }} </td>
+                                    <td> {{ finding.issue_name }} </td>
+                                    <td> {{ finding.issue_description }} </td>
+                                    <td> {{ finding.issue_solution }} </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table> 
+                    {% else %}
+                        <p>Here are your results from ChatGPT:</p>
+                        <div class="container">
+                            <pre wrap="true">{{ answer }}</pre>
+                        </div>
+                    {% endif %}
+                    <button class="btn btn-primary btn-lg" type="button">Clear</button>
+                {% endif %}
+            </div>
+          </div>
+        </div>
+    </div>
+</main>
+
+
+
 {% endblock %}
