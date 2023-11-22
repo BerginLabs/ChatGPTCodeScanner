@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<main class="container">
+    <br> 
+    <div class="container" align="center">
+        <div class="p-5 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                {% if result_message %}
+                <p>{{ result_message }}</p>
+                {% else %}
+                <p>Please provide a file.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="container" align="center">
+        <div class="form-outline">
+            <form action="/upload" method="post" id="zipfile" name="zipfile" placeholder="zipfile" type="file" enctype="multipart/form-data">
+                <label for="formFileLg" class="form-label">Large file input example</label>
+                <input class="form-control form-control-sm" id="zipfile" type="file" name="zipfile" placeholder="zipfile">
+                <button type="submit" class="btn btn-primary" action>Submit</button>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}

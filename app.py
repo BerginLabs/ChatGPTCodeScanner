@@ -2,11 +2,13 @@
 
 import os
 import json
+from pathlib import Path
 
 import openai
 
 from flask import Flask
 from flask import request
+from flask import flash
 from flask import render_template
 from flask import redirect
 from flask import url_for
@@ -23,6 +25,7 @@ from wtforms.validators import DataRequired
 
 class Config(object):
     SECRET_KEY = os.environ['FLASK_SECRET_KEY']
+    DEBUG = True
 
 
 class CodeSubmitForm(FlaskForm):
@@ -42,6 +45,10 @@ class ChatGPT(object):
             {
                 "role": "system",
                 "content": "You are a programming bot to help users write and secure code in any programming language."
+            },
+            {
+                "role": "system",
+                "content": "The user will provide the source code via a zip file containing the code or a message to you."
             },
             {
                 "role": "system", 
@@ -71,7 +78,7 @@ class ChatGPT(object):
         self._setup_context()
 
     def _setup_context(self):
-        response = client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=self.model,
             messages=self.messages
         )
@@ -88,7 +95,7 @@ class ChatGPT(object):
 
     def message(self, message):
         self.messages.append({"role": "user", "content": message})
-        response = client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=self.model,
             messages=self.messages
         )
@@ -99,6 +106,36 @@ class ChatGPT(object):
             }
         )
         return response.choices[0].message.content
+
+    def send_file(self, file_to_send, uploaded):
+        if os.path.exists(file_to_send):
+            os.remove(file_to_send)
+        
+        uploaded.save(file_to_send)
+
+        with open(file_to_send, 'rb') as file:
+            response = self.client.files.create(file=Path(file_to_send), purpose='assistants')
+            file_id = response.id
+            self.messages.append(
+                {
+                    "role": "assistant",
+                    "content": f"Unzip this zip file and review it for security concerns: {file_id}. Give the results in JSON format as described."
+                }
+            )
+
+        r = self.client.chat.completions.create(
+            model=self.model,
+            messages=self.messages
+        )
+
+        self.messages.append(
+            {
+                "role": "assistant", 
+                "content": r.choices[0].message.content
+            }
+        )
+
+        return r.choices[0].message.content
 
 
 app = Flask(__name__)
@@ -111,12 +148,26 @@ def home():
     return redirect(url_for('index'))
 
 
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    if request.method == 'POST':
+        uploaded_file = request.files['zipfile']
+        if uploaded_file.filename != '':
+            
+            file_path = os.path.join("uploads/", uploaded_file.filename)
+            resp = gpt.send_file(file_path, uploaded_file)
+
+            return render_template('upload.html', result_message=resp)
+
+    return render_template('upload.html')
+
+
 @app.route("/clear", methods=["GET",])
 def clear():
     for msg in gpt.messages:
         if msg['role'] != 'system':
             gpt.messages.remove(msg)
-    return redirect(url_for('code_analyzer'))
+    return redirect(url_for('chat_thread'))
 
 
 @app.route('/home', methods=["GET",])
